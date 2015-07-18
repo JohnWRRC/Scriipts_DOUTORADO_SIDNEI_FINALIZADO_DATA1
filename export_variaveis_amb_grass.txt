@@ -1,0 +1,18 @@
+x=`g.mlist pattern="*MW*"`
+cd "F:\data\john_pc2\sidnei\Grass\variaveis_amb_saida_grass"
+for i in $x
+do
+g.region rast=$i
+out=$i.tif
+r.out.gdal in=$i out=$out nodata=-9999
+done
+
+
+x=`g.mlist pattern="*eucdist*"`
+cd "E:\data_2015\Andre_regolin\___john\Sidnei_parte2\saidas_grass_eucdist"
+for i in $x
+do
+g.region rast=$i
+out=$i.tif
+r.out.gdal in=$i out=$out nodata=-9999
+done

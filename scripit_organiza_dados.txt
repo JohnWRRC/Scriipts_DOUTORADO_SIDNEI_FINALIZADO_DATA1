@@ -1,0 +1,67 @@
+#######################################################################
+##################>>>>>>>>>>>>>C04<<<<<<<<<<<<<<<<#####################
+#######################################################################
+cd "F:\data\john_pc2\sidnei\shp_eviados_sidnei_2015_02_d11"
+v.in.ogr dsn=mask_c04.shp out=mask_c04_shp -o
+g.region vect=mask_c04_shp res=30
+v.to.rast in=mask_c04_shp out=mask_c04_shp_rast use=attr column=id --o
+
+# 1 e nulls()
+g.region rast=C4_class_bha_100_3_pos_T_pol_join_UTM_rast
+r.mapcalc "C4_Banhado_Rizi=if(C4_class_bha_100_3_pos_T_pol_join_UTM_rast==25 | C4_class_bha_100_3_pos_T_pol_join_UTM_rast==17,1,null())"
+r.mapcalc "C4_agua=if(C4_class_bha_100_3_pos_T_pol_join_UTM_rast == 10, 1, null())"
+r.mapcalc "C4_area_urbana=if(C4_class_bha_100_3_pos_T_pol_join_UTM_rast == 53, 1, null())"
+r.mapcalc "C4_campo_rural= if(C4_class_bha_100_3_pos_T_pol_join_UTM_rast == 32, 1, null())"
+r.mapcalc "C4_vegetao=if(C4_class_bha_100_3_pos_T_pol_join_UTM_rast == 13 | C4_class_bha_100_3_pos_T_pol_join_UTM_rast == 14, 1, null())"
+
+# bins 0 e 1 int
+g.region rast=mask_c04_shp_rast
+r.series input=mask_c04_shp_rast,C4_Banhado_Rizi output=C4_Banhado_Rizi_bin method=sum --o
+r.series input=mask_c04_shp_rast,C4_agua out=C4_agua_bin method=sum --o
+r.series input=mask_c04_shp_rast,C4_area_urbana out=C4_area_urbana_bin method=sum --o
+r.series input=mask_c04_shp_rast,C4_campo_rural out=C4_campo_rural_bin method=sum --o
+r.series input=mask_c04_shp_rast,C4_vegetao out=C4_vegetao_bin method=sum --o
+
+#euclidean distance
+g.region rast=mask_c04_shp_rast
+r.grow.distance in=C4_Banhado_Rizi distance=C4_Banhado_Rizi_eucdist
+r.grow.distance in=C4_agua distance=C4_agua_eucdist
+r.grow.distance in=C4_area_urbana distance=C4_area_urbana_eucdist
+r.grow.distance in=C4_campo_rural distance=C4_campo_rural_eucdist
+r.grow.distance in=C4_vegetao distance=C4_vegetao_eucdist
+
+# bins 0 e 1 floats
+C1_campo_rural_bin_float
+
+r.mapcalc "C4_campo_rural_bin_float=C4_campo_rural_bin*1.0"
+r.mapcalc "C4_Banhado_Rizi_bin_float=C4_Banhado_Rizi_bin*1.0"
+r.mapcalc "C4_area_urbana_bin_float=C4_area_urbana_bin*1.0"
+r.mapcalc "C4_campo_rural_bin_float=C4_campo_rural_bin*1.0"
+r.mapcalc "C4_vegetao_bin_float=C4_vegetao_bin*1.0"
+
+
+# r.neighbors 300m
+r.neighbors -c input=C4_campo_rural_bin_float output=C4_campo_rural_bin_float_MW300m method=average size=11
+r.neighbors -c input=C4_Banhado_Rizi_bin_float output=C4_Banhado_Rizi_bin_float_MW300m method=average size=11
+r.neighbors -c input=C4_area_urbana_bin_float output=C4_area_urbana_bin_float_MW300m method=average size=11
+r.neighbors -c input=C4_campo_rural_bin_float output=C4_campo_rural_bin_float_MW300m method=average size=11
+r.neighbors -c input=C4_vegetao_bin_float output=C4_vegetao_bin_float_MW300m method=average size=11
+
+classificada_19920713_24022015_utm_final_rast_tif
+
+# r.neighbors 1500m
+r.neighbors -c input=C4_campo_rural_bin_float output=C4_campo_rural_bin_float_MW1500m method=average size=51
+r.neighbors -c input=C4_Banhado_Rizi_bin_float output=C4_Banhado_Rizi_bin_float_MW1500m method=average size=51
+r.neighbors -c input=C4_area_urbana_bin_float output=C4_area_urbana_bin_float_MW1500m method=average size=51
+r.neighbors -c input=C4_vegetao_bin_float output=C4_vegetao_bin_float_MW1500m method=average size=51
+
+
+r.in.gdal in=classificada_19880904_24022015_utm_final.tif out=classificada_19880904_24022015_utm_final_tif
+r.in.gdal in=classificada_19920713_24022015_utm_final_rast.tif out=classificada_19920713_24022015_utm_final_rast_tif
+
+
+# r.neighbors 3000m
+r.neighbors -c input=C4_campo_rural_bin_float output=C4_campo_rural_bin_float_MW3000m method=average size=101
+r.neighbors -c input=C4_Banhado_Rizi_bin_float output=C4_Banhado_Rizi_bin_float_MW3000m method=average size=101
+r.neighbors -c input=C4_area_urbana_bin_float output=C4_area_urbana_bin_float_MW3000m method=average size=101
+r.neighbors -c input=C4_vegetao_bin_float output=C4_vegetao_bin_float_MW13000m method=average size=101
